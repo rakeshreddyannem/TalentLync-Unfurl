@@ -4,35 +4,49 @@
 
 @layer utilities {
   .glass-panel {
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(226, 232, 240, 0.9);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
   }
   
   .glass-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04);
   }
 
   .glow-blue {
-    box-shadow: 0 0 25px -3px rgba(54, 141, 255, 0.25);
+    box-shadow: 0 0 25px -3px rgba(54, 141, 255, 0.2);
   }
 
   .glow-green {
-    box-shadow: 0 0 25px -3px rgba(0, 169, 98, 0.25);
+    box-shadow: 0 0 25px -3px rgba(0, 169, 98, 0.2);
+  }
+
+  .card-3d-smooth {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    will-change: transform;
   }
 }
 
-/* Custom Scrollbars for Light Theme */
+/* Global Font & Text Rendering Optimizations */
+html, body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Custom Light Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f8fafc;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
@@ -41,5 +55,3 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #368dff;
 }
-
-

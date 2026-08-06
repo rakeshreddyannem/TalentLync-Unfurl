@@ -39,7 +39,7 @@ export const createLocalAvatarSvg = (name = 'Candidate', platform = 'other') => 
       </linearGradient>
     </defs>
     <rect width="128" height="128" rx="36" fill="url(#grad-${initials})" />
-    <circle cx="64" cy="64" r="54" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+    <circle cx="64" cy="64" r="54" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" />
     <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="46" font-weight="900" letter-spacing="1">${initials}</text>
   </svg>`;
 
@@ -47,7 +47,6 @@ export const createLocalAvatarSvg = (name = 'Candidate', platform = 'other') => 
 };
 
 export const getPlatformMeta = (platformName = 'other') => {
-
   const p = platformName.toLowerCase();
   switch (p) {
     case 'github':
@@ -76,7 +75,7 @@ export const getPlatformMeta = (platformName = 'other') => {
       return {
         label: 'X (Twitter)',
         icon: <Twitter className="w-4 h-4" />,
-        badgeClass: 'bg-zinc-100 text-zinc-800 border-zinc-300',
+        badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
         color: '#0284c7',
       };
     case 'dribbble':
@@ -126,5 +125,3 @@ export const getRelevanceColor = (score = 75) => {
   if (score >= 50) return 'text-[#d97706] bg-amber-50 border-amber-200';
   return 'text-[#db3662] bg-rose-50 border-rose-200';
 };
-
-

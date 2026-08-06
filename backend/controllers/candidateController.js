@@ -50,169 +50,11 @@ const detectPlatform = (urlStr = '') => {
   return 'other';
 };
 
-// Pure local mock candidates (100% offline, zero external dependencies)
-let inMemoryCandidates = [
-  {
-    _id: 'mock-1',
-    url: 'https://github.com/torvalds',
-    name: 'Linus Torvalds',
-    headline: 'Creator of Linux & Git',
-    bio: 'Open source enthusiast, C language guru, and system architect leading Linux kernel development.',
-    avatarUrl: generateLocalAvatar('Linus Torvalds', 'github'),
-    platform: 'github',
-    skillTags: ['C', 'Linux', 'Kernel', 'Git', 'System Architecture'],
-    experienceLevel: 'Lead',
-    relevanceScore: 98,
-    isShortlisted: true,
-    createdAt: new Date('2026-08-06T08:00:00Z').toISOString(),
-  },
-  {
-    _id: 'mock-2',
-    url: 'https://github.com/gaearon',
-    name: 'Dan Abramov',
-    headline: 'React Core Alum & Frontend Architect',
-    bio: 'Working on React, Redux, Create React App, and UI engineering primitives.',
-    avatarUrl: generateLocalAvatar('Dan Abramov', 'github'),
-    platform: 'github',
-    skillTags: ['React', 'JavaScript', 'TypeScript', 'Redux', 'UI Architecture'],
-    experienceLevel: 'Senior',
-    relevanceScore: 94,
-    isShortlisted: true,
-    createdAt: new Date('2026-08-06T08:10:00Z').toISOString(),
-  },
-  {
-    _id: 'mock-3',
-    url: 'https://www.behance.net/elena_rostova',
-    name: 'Elena Rostova',
-    headline: 'Lead Product Designer & Design Systems Lead',
-    bio: 'Crafting high-impact fintech micro-interactions, dark mode designs, and accessible design systems.',
-    avatarUrl: generateLocalAvatar('Elena Rostova', 'behance'),
-    platform: 'behance',
-    skillTags: ['UI/UX', 'Figma', 'Design Systems', 'Micro-animations', 'Prototyping'],
-    experienceLevel: 'Lead',
-    relevanceScore: 91,
-    isShortlisted: false,
-    createdAt: new Date('2026-08-06T08:20:00Z').toISOString(),
-  },
-  {
-    _id: 'mock-4',
-    url: 'https://x.com/alex_vance',
-    name: 'Alex Vance',
-    headline: 'Full Stack Cloud Engineer (AWS / Node / React)',
-    bio: 'Building scalable distributed microservices, GraphQL gateways, and real-time dashboard analytics.',
-    avatarUrl: generateLocalAvatar('Alex Vance', 'x'),
-    platform: 'x',
-    skillTags: ['Node.js', 'React', 'AWS', 'Docker', 'GraphQL', 'MongoDB'],
-    experienceLevel: 'Senior',
-    relevanceScore: 86,
-    isShortlisted: false,
-    createdAt: new Date('2026-08-06T08:30:00Z').toISOString(),
-  },
-  {
-    _id: 'mock-5',
-    url: 'https://dribbble.com/maya_lin',
-    name: 'Maya Lin',
-    headline: 'Senior Visual Brand Designer & 3D Artist',
-    bio: 'Specializing in 3D web interactive graphics, Spline, Three.js, and futuristic motion branding.',
-    avatarUrl: generateLocalAvatar('Maya Lin', 'dribbble'),
-    platform: 'dribbble',
-    skillTags: ['Three.js', '3D Motion', 'WebGL', 'Figma', 'Branding'],
-    experienceLevel: 'Mid',
-    relevanceScore: 79,
-    isShortlisted: false,
-    createdAt: new Date('2026-08-06T08:40:00Z').toISOString(),
-  }
-];
-
-// Initial mock candidates to seed database if empty
-const seedMockCandidates = async () => {
-  if (global.useInMemoryStore) return;
-  const count = await Candidate.countDocuments();
-  if (count === 0) {
-    const mockData = inMemoryCandidates.map(({ _id, ...rest }) => rest);
-    await Candidate.insertMany(mockData);
-    console.log('[Seed] Database populated with local sample talent profiles.');
-  }
-};
-
 // @desc    Get all candidates with search, filter, and sorting
 // @route   GET /api/candidates
 exports.getCandidates = async (req, res) => {
   try {
-    const { search, platform, minScore, shortlisted, sortBy = 'createdAt', order = 'desc' } = req.query;
-
-    if (global.useInMemoryStore) {
-      let filtered = [...inMemoryCandidates];
-
-      if (platform && platform !== 'all') {
-        filtered = filtered.filter(c => c.platform === platform);
-      }
-
-      if (minScore) {
-        filtered = filtered.filter(c => c.relevanceScore >= Number(minScore));
-      }
-
-      if (shortlisted === 'true') {
-        filtered = filtered.filter(c => c.isShortlisted);
-      }
-
-      if (search) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter(c => 
-          c.name.toLowerCase().includes(q) ||
-          c.headline.toLowerCase().includes(q) ||
-          c.bio.toLowerCase().includes(q) ||
-          (c.skillTags && c.skillTags.some(tag => tag.toLowerCase().includes(q)))
-        );
-      }
-
-      filtered.sort((a, b) => {
-        const valA = a[sortBy] || '';
-        const valB = b[sortBy] || '';
-        if (order === 'asc') {
-          return valA > valB ? 1 : -1;
-        } else {
-          return valA < valB ? 1 : -1;
-        }
-      });
-
-      return res.status(200).json({
-        success: true,
-        count: filtered.length,
-        data: filtered,
-      });
-    }
-
-    await seedMockCandidates();
-
-    const filter = {};
-
-    if (platform && platform !== 'all') {
-      filter.platform = platform;
-    }
-
-    if (minScore) {
-      filter.relevanceScore = { $gte: Number(minScore) };
-    }
-
-    if (shortlisted === 'true') {
-      filter.isShortlisted = true;
-    }
-
-    if (search) {
-      const searchRegex = new RegExp(search, 'i');
-      filter.$or = [
-        { name: searchRegex },
-        { headline: searchRegex },
-        { bio: searchRegex },
-        { skillTags: { $in: [searchRegex] } },
-      ];
-    }
-
-    const sortOptions = {};
-    sortOptions[sortBy] = order === 'asc' ? 1 : -1;
-
-    const candidates = await Candidate.find(filter).sort(sortOptions);
+    const candidates = await Candidate.findAll(req.query);
     res.status(200).json({
       success: true,
       count: candidates.length,
@@ -237,7 +79,7 @@ exports.createCandidate = async (req, res) => {
     const resolvedPlatform = platform || detectPlatform(url);
     const resolvedAvatar = avatarUrl || generateLocalAvatar(name, resolvedPlatform);
 
-    const candidateData = {
+    const savedCandidate = await Candidate.create({
       url,
       name,
       headline: headline || '',
@@ -248,20 +90,8 @@ exports.createCandidate = async (req, res) => {
       experienceLevel: experienceLevel || 'Mid',
       relevanceScore: relevanceScore !== undefined ? Number(relevanceScore) : 75,
       isShortlisted: Boolean(isShortlisted),
-    };
+    });
 
-    if (global.useInMemoryStore) {
-      const newCandidate = {
-        _id: 'mem-' + Date.now(),
-        ...candidateData,
-        createdAt: new Date().toISOString(),
-      };
-      inMemoryCandidates.unshift(newCandidate);
-      return res.status(201).json({ success: true, data: newCandidate });
-    }
-
-    const candidate = new Candidate(candidateData);
-    const savedCandidate = await candidate.save();
     res.status(201).json({ success: true, data: savedCandidate });
   } catch (error) {
     console.error('Error creating candidate:', error);
@@ -274,24 +104,11 @@ exports.createCandidate = async (req, res) => {
 exports.toggleShortlist = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (global.useInMemoryStore) {
-      const candidate = inMemoryCandidates.find(c => c._id === id);
-      if (!candidate) {
-        return res.status(404).json({ success: false, message: 'Candidate not found' });
-      }
-      candidate.isShortlisted = !candidate.isShortlisted;
-      return res.status(200).json({ success: true, data: candidate });
-    }
-
-    const candidate = await Candidate.findById(id);
+    const candidate = await Candidate.toggleShortlist(id);
 
     if (!candidate) {
       return res.status(404).json({ success: false, message: 'Candidate not found' });
     }
-
-    candidate.isShortlisted = !candidate.isShortlisted;
-    await candidate.save();
 
     res.status(200).json({ success: true, data: candidate });
   } catch (error) {
@@ -305,19 +122,9 @@ exports.toggleShortlist = async (req, res) => {
 exports.deleteCandidate = async (req, res) => {
   try {
     const { id } = req.params;
+    const success = await Candidate.deleteById(id);
 
-    if (global.useInMemoryStore) {
-      const initialLength = inMemoryCandidates.length;
-      inMemoryCandidates = inMemoryCandidates.filter(c => c._id !== id);
-      if (inMemoryCandidates.length === initialLength) {
-        return res.status(404).json({ success: false, message: 'Candidate not found' });
-      }
-      return res.status(200).json({ success: true, message: 'Candidate deleted successfully' });
-    }
-
-    const deleted = await Candidate.findByIdAndDelete(id);
-
-    if (!deleted) {
+    if (!success) {
       return res.status(404).json({ success: false, message: 'Candidate not found' });
     }
 
@@ -337,7 +144,6 @@ exports.unfurlUrl = async (req, res) => {
       return res.status(400).json({ success: false, message: 'URL query parameter is required' });
     }
 
-    // Validate URL format locally
     let parsedUrl;
     try {
       parsedUrl = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
@@ -350,7 +156,6 @@ exports.unfurlUrl = async (req, res) => {
     const pathnameParts = parsedUrl.pathname.split('/').filter(Boolean);
     const lastPart = pathnameParts.length > 0 ? pathnameParts[pathnameParts.length - 1] : 'candidate';
     
-    // Extract formatted name from URL path
     let extractedName = lastPart
       .replace(/[-_]/g, ' ')
       .replace(/\b\w/g, (char) => char.toUpperCase());
@@ -359,7 +164,6 @@ exports.unfurlUrl = async (req, res) => {
       extractedName = 'Talent Candidate';
     }
 
-    // Local Dictionary Rules for known URL patterns to provide rich offline metadata
     let headline = '';
     let bio = '';
     let suggestedTags = [];

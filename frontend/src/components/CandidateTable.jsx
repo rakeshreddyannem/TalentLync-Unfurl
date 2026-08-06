@@ -10,25 +10,25 @@ import {
 export default function CandidateTable({ candidates = [], onToggleShortlist, onDelete }) {
   if (candidates.length === 0) {
     return (
-      <div className="p-8 text-center glass-panel rounded-2xl text-slate-500 text-xs font-medium">
+      <div className="p-8 text-center glass-panel rounded-3xl text-slate-500 text-xs font-medium border border-slate-200 bg-white">
         No candidate profiles match the selected filter criteria.
       </div>
     );
   }
 
   return (
-    <div className="w-full glass-panel rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden my-6">
+    <div className="w-full glass-panel rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden my-6">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-slate-700">
-          <thead className="bg-slate-100 text-slate-700 uppercase font-bold border-b border-slate-200 tracking-wider">
+          <thead className="bg-slate-100/90 text-slate-700 uppercase font-extrabold border-b border-slate-200 tracking-wider">
             <tr>
-              <th className="py-3.5 px-4">Candidate</th>
-              <th className="py-3.5 px-4">Platform</th>
-              <th className="py-3.5 px-4">Level</th>
-              <th className="py-3.5 px-4">Relevance</th>
-              <th className="py-3.5 px-4">Skill Matrix</th>
-              <th className="py-3.5 px-4 text-center">Shortlist</th>
-              <th className="py-3.5 px-4 text-right">Actions</th>
+              <th className="py-4 px-4">Candidate</th>
+              <th className="py-4 px-4">Platform</th>
+              <th className="py-4 px-4">Level</th>
+              <th className="py-4 px-4">Relevance</th>
+              <th className="py-4 px-4">Skill Matrix</th>
+              <th className="py-4 px-4 text-center">Shortlist</th>
+              <th className="py-4 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -36,9 +36,10 @@ export default function CandidateTable({ candidates = [], onToggleShortlist, onD
               const platformMeta = getPlatformMeta(c.platform);
               const expColor = getExperienceBadgeColor(c.experienceLevel);
               const relColor = getRelevanceColor(c.relevanceScore);
+              const candidateId = c._id || c.id;
 
               return (
-                <tr key={c._id} className="hover:bg-slate-50/80 transition-colors">
+                <tr key={candidateId} className="hover:bg-slate-50 transition-colors">
                   
                   {/* Candidate Avatar & Name */}
                   <td className="py-3.5 px-4">
@@ -46,15 +47,15 @@ export default function CandidateTable({ candidates = [], onToggleShortlist, onD
                       <img
                         src={c.avatarUrl || createLocalAvatarSvg(c.name, c.platform)}
                         alt={c.name}
-                        className="w-9 h-9 rounded-xl object-cover border border-slate-200 bg-slate-100 shrink-0"
+                        className="w-9 h-9 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0 shadow-2xs"
                         onError={(e) => {
                           e.target.src = createLocalAvatarSvg(c.name, c.platform);
                         }}
                       />
 
                       <div className="min-w-0 max-w-[200px]">
-                        <h4 className="font-bold text-slate-900 truncate">{c.name}</h4>
-                        <p className="text-[11px] text-slate-500 truncate">{c.headline || c.url}</p>
+                        <h4 className="font-extrabold text-slate-900 truncate">{c.name}</h4>
+                        <p className="text-[11px] text-slate-500 font-medium truncate">{c.headline || c.url}</p>
                       </div>
                     </div>
                   </td>
@@ -109,8 +110,8 @@ export default function CandidateTable({ candidates = [], onToggleShortlist, onD
                   <td className="py-3.5 px-4 text-center">
                     <button
                       type="button"
-                      onClick={() => onToggleShortlist(c._id)}
-                      className="p-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 hover:text-[#db3662] transition-colors"
+                      onClick={() => onToggleShortlist(candidateId)}
+                      className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 hover:text-[#db3662] transition-colors cursor-pointer"
                     >
                       <Heart className={`w-4 h-4 ${c.isShortlisted ? 'fill-[#db3662] text-[#db3662]' : ''}`} />
                     </button>
@@ -123,15 +124,15 @@ export default function CandidateTable({ candidates = [], onToggleShortlist, onD
                         href={c.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-1.5 rounded-lg bg-slate-100 border border-slate-200 text-[#368dff] hover:text-[#257ce6] transition-colors"
+                        className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-[#368dff] hover:text-blue-700 transition-colors"
                         title="Open Link"
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
                       <button
                         type="button"
-                        onClick={() => onDelete(c._id)}
-                        className="p-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 hover:text-[#db3662] transition-colors"
+                        onClick={() => onDelete(candidateId)}
+                        className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 hover:text-[#db3662] transition-colors cursor-pointer"
                         title="Delete Candidate"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -148,5 +149,3 @@ export default function CandidateTable({ candidates = [], onToggleShortlist, onD
     </div>
   );
 }
-
-

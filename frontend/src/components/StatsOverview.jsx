@@ -58,14 +58,14 @@ export default function StatsOverview({ candidates = [] }) {
       {stats.map((item, index) => (
         <div
           key={index}
-          className={`p-4 rounded-2xl ${item.bg} border ${item.border} shadow-sm flex items-center justify-between transition-transform duration-200 hover:-translate-y-0.5`}
+          className={`p-5 rounded-3xl ${item.bg} border ${item.border} shadow-sm flex items-center justify-between transition-transform duration-200 hover:-translate-y-0.5`}
         >
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{item.title}</p>
-            <h4 className="text-2xl font-black text-slate-900 mt-1">{item.value}</h4>
-            <p className="text-xs text-slate-500 mt-1 font-medium">{item.sub}</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{item.title}</p>
+            <h4 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">{item.value}</h4>
+            <p className="text-xs text-slate-600 mt-1 font-medium">{item.sub}</p>
           </div>
-          <div className={`p-3 rounded-xl border ${item.iconBg} shadow-sm`}>
+          <div className={`p-3 rounded-2xl border ${item.iconBg} shadow-sm`}>
             {item.icon}
           </div>
         </div>
@@ -73,5 +73,3 @@ export default function StatsOverview({ candidates = [] }) {
     </div>
   );
 }
-
-

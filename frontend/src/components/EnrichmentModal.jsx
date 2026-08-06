@@ -8,12 +8,11 @@ import {
   Award,
   User,
   FileText,
-  Link,
+  Link as LinkIcon,
   Save,
   Loader2,
   Check
 } from 'lucide-react';
-
 
 const PRESET_SKILLS = [
   'React', 'Node.js', 'TypeScript', 'JavaScript', 'Python', 'C++', 'Java',
@@ -23,7 +22,10 @@ const PRESET_SKILLS = [
 
 const EXPERIENCE_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Executive'];
 
-export default function EnrichmentModal({ initialData, onClose, onSave }) {
+export default function EnrichmentModal({ isOpen, initialData, unfurledData, onClose, onSaveCandidate, onSave }) {
+  const activeData = unfurledData || initialData;
+  const handleSave = onSaveCandidate || onSave;
+
   const [formData, setFormData] = useState({
     url: '',
     name: '',
@@ -41,21 +43,21 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
+    if (activeData) {
       setFormData({
-        url: initialData.url || '',
-        name: initialData.name || '',
-        headline: initialData.headline || '',
-        bio: initialData.bio || '',
-        avatarUrl: initialData.avatarUrl || '',
-        platform: initialData.platform || 'other',
-        skillTags: initialData.suggestedTags || initialData.skillTags || ['React', 'Node.js'],
-        experienceLevel: initialData.experienceLevel || 'Mid',
-        relevanceScore: initialData.relevanceScore ?? 85,
-        isShortlisted: Boolean(initialData.isShortlisted),
+        url: activeData.url || '',
+        name: activeData.name || '',
+        headline: activeData.headline || '',
+        bio: activeData.bio || '',
+        avatarUrl: activeData.avatarUrl || '',
+        platform: activeData.platform || 'other',
+        skillTags: activeData.suggestedTags || activeData.skillTags || ['React', 'Node.js'],
+        experienceLevel: activeData.experienceLevel || 'Mid',
+        relevanceScore: activeData.relevanceScore ?? 85,
+        isShortlisted: Boolean(activeData.isShortlisted),
       });
     }
-  }, [initialData]);
+  }, [activeData]);
 
   const handleAddTag = (tagToAdd) => {
     const clean = tagToAdd.trim();
@@ -81,7 +83,9 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
 
     setSaving(true);
     try {
-      await onSave(formData);
+      if (typeof handleSave === 'function') {
+        await handleSave(formData);
+      }
       onClose();
     } catch (err) {
       console.error('Save error:', err);
@@ -90,28 +94,29 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
     }
   };
 
-  if (!initialData) return null;
+  const isModalVisible = isOpen !== undefined ? isOpen : Boolean(activeData);
+  if (!isModalVisible || !activeData) return null;
 
   const currentPlatformMeta = getPlatformMeta(formData.platform);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden my-8 text-slate-900">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-[#368dff]/10 border border-[#368dff]/20 text-[#368dff]">
+            <div className="p-2 rounded-xl bg-[#368dff]/10 border border-[#368dff]/20 text-[#368dff]">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Signal Enrichment Controls</h3>
+              <h3 className="text-lg font-extrabold text-slate-900">Signal Enrichment Controls</h3>
               <p className="text-xs text-slate-500 font-medium">Assign candidate attributes, skill matrix, and match relevance</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -121,34 +126,34 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
           
           {/* Candidate Quick Profile Preview Header */}
-          <div className="flex items-center space-x-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center space-x-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
             <img
               src={formData.avatarUrl || createLocalAvatarSvg(formData.name, formData.platform)}
               alt={formData.name}
-              className="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white shadow-2xs"
+              className="w-14 h-14 rounded-2xl object-cover border border-slate-200 bg-white shadow-2xs"
               onError={(e) => {
                 e.target.src = createLocalAvatarSvg(formData.name, formData.platform);
               }}
             />
 
             <div className="flex-1 min-w-0">
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center space-x-1 ${currentPlatformMeta.badgeClass}`}>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center space-x-1 ${currentPlatformMeta.badgeClass}`}>
                 {currentPlatformMeta.icon}
                 <span>{currentPlatformMeta.label}</span>
               </span>
               <h4 className="text-sm font-extrabold text-slate-900 truncate mt-1">{formData.name || 'Candidate Name'}</h4>
-              <p className="text-xs text-slate-500 truncate">{formData.url}</p>
+              <p className="text-xs text-slate-500 font-medium truncate">{formData.url}</p>
             </div>
           </div>
 
           {/* Relevance Match Score Slider */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-2">
                 <Award className="w-4 h-4 text-[#368dff]" />
                 <span>Recruiter Relevance Match Score</span>
               </label>
-              <span className="px-3 py-1 text-sm font-black rounded-lg bg-[#368dff]/10 text-[#368dff] border border-[#368dff]/30 font-mono">
+              <span className="px-3 py-1 text-sm font-black rounded-xl bg-[#368dff]/10 text-[#368dff] border border-[#368dff]/30 font-mono">
                 {formData.relevanceScore}%
               </span>
             </div>
@@ -175,17 +180,17 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
             </label>
             
             {/* Active Tags */}
-            <div className="flex flex-wrap items-center gap-2 mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200 min-h-[48px]">
+            <div className="flex flex-wrap items-center gap-2 mb-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 min-h-[48px]">
               {formData.skillTags.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="px-3 py-1 rounded-lg text-xs font-bold bg-[#368dff]/10 text-[#368dff] border border-[#368dff]/30 flex items-center space-x-1.5"
+                  className="px-3 py-1 rounded-xl text-xs font-extrabold bg-blue-50 text-[#368dff] border border-blue-200 flex items-center space-x-1.5"
                 >
                   <span>{tag}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-[#db3662] transition-colors"
+                    className="hover:text-[#db3662] transition-colors cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -209,12 +214,12 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
                   }
                 }}
                 placeholder="Type custom skill tag and press Enter..."
-                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all"
+                className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
               />
               <button
                 type="button"
                 onClick={() => handleAddTag(tagInput)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 flex items-center space-x-1 transition-colors"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 flex items-center space-x-1 transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 text-[#368dff]" />
                 <span>Add</span>
@@ -231,9 +236,9 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
                     key={preset}
                     type="button"
                     onClick={() => (isSelected ? handleRemoveTag(preset) : handleAddTag(preset))}
-                    className={`px-2.5 py-1 text-[11px] font-bold rounded-md border transition-all ${
+                    className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#368dff] text-white border-[#368dff]'
+                        ? 'bg-[#368dff] text-white border-[#368dff] shadow-sm'
                         : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
                     }`}
                   >
@@ -255,7 +260,7 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
               <select
                 value={formData.experienceLevel}
                 onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value })}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
               >
                 {EXPERIENCE_LEVELS.map((lvl) => (
                   <option key={lvl} value={lvl}>
@@ -273,7 +278,7 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
               <select
                 value={formData.platform}
                 onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
               >
                 <option value="github">GitHub</option>
                 <option value="linkedin">LinkedIn</option>
@@ -295,7 +300,7 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
               />
             </div>
 
@@ -309,7 +314,7 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
                 value={formData.headline}
                 onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
                 placeholder="e.g. Senior Frontend Engineer"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
               />
             </div>
           </div>
@@ -324,7 +329,7 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               placeholder="Candidate public bio or notes..."
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-medium"
             />
           </div>
 
@@ -338,7 +343,7 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
               value={formData.avatarUrl}
               onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
               placeholder="https://..."
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-mono"
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#368dff] focus:bg-white transition-all font-mono"
             />
           </div>
 
@@ -361,14 +366,14 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 bg-[#368dff] hover:bg-[#257ce6] text-white text-xs font-bold rounded-xl shadow-md shadow-[#368dff]/25 flex items-center space-x-2 transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-[#368dff] hover:bg-[#257ce6] text-white text-xs font-extrabold rounded-xl shadow-md shadow-[#368dff]/20 flex items-center space-x-2 transition-all cursor-pointer"
             >
               {saving ? (
                 <>
@@ -390,5 +395,3 @@ export default function EnrichmentModal({ initialData, onClose, onSave }) {
     </div>
   );
 }
-
-
